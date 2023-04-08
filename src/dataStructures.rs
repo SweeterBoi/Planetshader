@@ -26,12 +26,12 @@ impl From<Vect3D> for Vect2D {
     }
 }
 
-
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct ColorScheme {
-    primary: Color,
-    secondary: Color,
-    tertiary: Color,
-    quaternary: Color
+    pub primary: Color,
+    pub secondary: Color,
+    pub tertiary: Color,
+    pub quaternary: Color
 }
 
 impl ColorScheme {
