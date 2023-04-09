@@ -17,7 +17,7 @@ pub mod converter {
 
         let deltaX: f64 = positionKartesian.x - centerposition.x;
         let deltaY: f64 = positionKartesian.y - centerposition.y;
-        let r: f64 = size as f64 / 2.0;
+        let r: f64 = size as f64;
         let phi: f64 = (deltaX/r).asin();
         let theta: f64 = -(deltaY/r).asin();
 

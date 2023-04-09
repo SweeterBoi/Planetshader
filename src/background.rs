@@ -22,6 +22,7 @@ impl BackgroundStars {
 
     pub fn draw(&self, canvas: &mut Canvas<Window>) -> () { 
         for star in &self.stars {
+            canvas.set_draw_color(Color::RGB(255, 255, 255));
             match star.draw(canvas) {
                 Ok(_) => (),
                 Err(_) => (),
@@ -42,7 +43,6 @@ impl DotStar {
     }
 
     fn draw(&self, canvas: &mut Canvas<Window>) -> Result<(), String> {
-        canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.draw_rect(Rect::new(self.position.x as i32, self.position.y as i32, 2, 2))
     }
 }

@@ -31,7 +31,8 @@ pub struct Planet{
     seed: u32,
     position: Vect2D,
     size: i16,
-    ColorScheme: ColorScheme,
+    ColorScheme: Vec<Color>,
+    rotationalAngle: f64
 }
 
 /*
@@ -44,7 +45,7 @@ impl Planet {
 
         @return a new Planet
      */
-    pub fn new(ColorScheme: ColorScheme) -> Self {
+    pub fn new(ColorScheme: Vec<Color>) -> Self {
         let seed = rand::thread_rng().gen();
         let position = Vect2D{x: (SCREENWIDTH as f64)/2f64, y: (SCREENHEIGHT as f64)/2f64};
         let size = 200i16;
@@ -55,7 +56,7 @@ impl Planet {
             LandMass: LandMass::new(seed, position, size),
             Atmosphere: Atmosphere::new(seed, position, size),
             ColorScheme: ColorScheme,
-            
+            rotationalAngle: 0f64,            
         }
     }
 
@@ -63,15 +64,69 @@ impl Planet {
         Update the Planet (e.g. Rotation)
      */
     pub fn update(&mut self) {
-        self.LandMass.update();
-        self.Atmosphere.update();
+        self.rotationalAngle += 0.01;
+        //self.LandMass.update();
+        //self.Atmosphere.update();
     }
     /*
         Draw wach component of the Planet
         @param canvas - the canvas to draw to
      */
+    fn isIlluminated(x: i32, y:i32, size: i32) -> bool {
+        let xOffset = 50;
+        let yOffset = 30;
+        let radius: i32 = (1.0 * size as f64) as i32;
+        (x + xOffset).pow(2) + (y + yOffset).pow(2) > radius.pow(2)
+    }
+
     pub fn draw(&mut self, canvas: &mut Canvas<Window>) {
-        self.LandMass.draw(canvas, self.ColorScheme);
-        self.Atmosphere.draw(canvas, self.ColorScheme);
+        
+        let xStart: i32 = self.position.x as i32 - self.size as i32;
+        let yStart: i32 = self.position.y as i32 - self.size as i32;
+
+        let perlin: Perlin = Perlin::new(self.seed);
+
+        for xi in xStart .. xStart + 2*self.size as i32 {
+            for yi in yStart.. yStart + 2*self.size as i32 {
+
+                let dx: i32 = xi - self.position.x as i32;
+                let dy: i32 = yi - self.position.y as i32;
+
+                if ((dx*dx + dy*dy) as f64).sqrt() > self.size as f64 {
+                    continue;
+                }
+                // get pixelcoordinates as coordinates on the sphere
+                let coordinatesOnSphere: Vect2D = PixelCoordinatesToSphereCoordinates(
+                    Vect2D {x: xi as f64, y: yi as f64},
+                    self.position,
+                    self.size);
+                // get perlin value for the landmass
+                let perlinLandmass: f64 = 8.0*perlin.get([
+                        coordinatesOnSphere.x+self.rotationalAngle, 
+                        coordinatesOnSphere.y, 
+                        0f64]);
+                // get perlin value for the atmosphere
+                let grid: f64 = 1.9;
+                let perlinAtmosphere = 8.0*perlin.get([
+                    grid * coordinatesOnSphere.y, 
+                    grid * (coordinatesOnSphere.x)+5.0*self.rotationalAngle, 
+                    3.0*self.rotationalAngle]);
+                // draw atmosphere over the landmass
+                if perlinAtmosphere > 0.8 {
+                    let drawColor = self.Atmosphere.getPixelValue(perlinAtmosphere, self.ColorScheme.clone(), dx, dy, &Self::isIlluminated);
+                    canvas.set_draw_color(drawColor);
+                    }
+                // draw landmass instead
+                else {
+                    let drawColor = self.LandMass.getPixelValue(perlinLandmass, self.ColorScheme.clone(), dx, dy, &Self::isIlluminated);
+                    // Set Color
+                    canvas.set_draw_color(drawColor);
+                }
+                match canvas.draw_point(Point::new(xi, yi)) {
+                    Ok(_) => (),
+                    Err(_) => {}
+                    };
+            }
+        }
     }
 }

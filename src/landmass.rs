@@ -37,55 +37,36 @@ impl LandMass {
             rotationalAngle: 0.0,
         }
     }
-    /*
+    /* THIS IS DEPRECATED
         Update the LandMass rotation angle
      */
     pub fn update(&mut self) {
         self.rotationalAngle += 0.01;
     }
-    /*
-        draw the LandMass
-        @param canvas - the canvas to draw to
-        @param ColorScheme - defines the color scheme of the planet
-     */
-    pub fn draw(&mut self, canvas: &mut Canvas<Window>, ColorScheme: ColorScheme) {
-        let xStart: i32 = self.position.x as i32 - self.size as i32;
-        let yStart: i32 = self.position.y as i32 - self.size as i32;
 
-        let perlin: Perlin = Perlin::new(self.seed);
+    pub fn getPixelValue(&mut self, perlinLandmass: f64, ColorScheme: Vec<Color>, dx:i32, dy:i32, illuminationFunction: &dyn Fn(i32, i32, i32) -> bool) -> Color {
+        let landMassDarkening = 40;
 
-        for xi in xStart .. xStart + 2*self.size as i32 {
-            for yi in yStart.. yStart + 2*self.size as i32 {
+        let perlinColor = match perlinLandmass {
+            x if x > 1.0 => ColorScheme[0],
+            x if x > 0.6 => ColorScheme[1],
+            x if x > 0.4 => ColorScheme[2],
+            x if x > 0.3 => ColorScheme[3],
+            _ => ColorScheme[4]
+        };
 
-                let dx: i32 = xi - self.position.x as i32;
-                let dy: i32 = yi - self.position.y as i32;
-
-                if ((dx*dx + dy*dy) as f64).sqrt() < self.size as f64 {
-
-                    let coordinatesOnSphere: Vect2D =  PixelCoordinatesToSphereCoordinates(
-                        Vect2D {x: xi as f64, y: yi as f64},
-                        self.position,
-                        2*self.size);
-
-                    let perlinValue: f64 = 2.0*perlin.get([
-                        coordinatesOnSphere.x+self.rotationalAngle, 
-                        coordinatesOnSphere.y, 
-                        0f64]);
-
-                    let drawColor = match perlinValue {
-                        x if x < 0.2 => ColorScheme.quaternary,
-                        x if x < 0.4 => ColorScheme.tertiary,
-                        x if x < 0.6 => ColorScheme.secondary,
-                        _ => ColorScheme.primary,
-                    };
-
-                    canvas.set_draw_color(drawColor);
-                    match canvas.draw_point(Point::new(xi, yi)) {
-                        Ok(_) => (),
-                        Err(_) => {}
-                    };
-                }
-            }
+        // Check wether the pixel value has to be darkened due to missing illumination
+        let isNotIllunimated: bool = illuminationFunction(dx, dy, self.size.into());
+        let drawColor: Color;
+        if isNotIllunimated {
+        drawColor =  Color::RGB(
+            perlinColor.r-landMassDarkening, 
+            perlinColor.g-landMassDarkening, 
+            perlinColor.b-landMassDarkening);
         }
+        else {
+        drawColor = perlinColor;
+        }
+        drawColor
     }
 }

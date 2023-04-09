@@ -28,23 +28,40 @@ impl From<Vect3D> for Vect2D {
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct ColorScheme {
-    pub primary: Color,
-    pub secondary: Color,
-    pub tertiary: Color,
-    pub quaternary: Color
+    pub c0: Color,
+    pub c1: Color,
+    pub c2: Color,
+    pub c3: Color,
+    pub c4: Color,
+    pub c5: Color,
+    pub c6: Color,
+    pub c7: Color,
+    pub c8: Color,
+    pub c9: Color,
 }
 
 impl ColorScheme {
 
     pub fn new() -> ColorScheme {
         let mut cols: Vec<Color> = Vec::new();
-        for _ in 0..4 {
+        for _ in 0..10 {
             let r: u8 = rand::thread_rng().gen_range(0..255);
             let g: u8 = rand::thread_rng().gen_range(0..255);
             let b: u8 = rand::thread_rng().gen_range(0..255);
             cols.push(Color::RGB(r, g, b));
         }
-        ColorScheme { primary: cols[0], secondary: cols[1], tertiary: cols[2], quaternary: cols[3] }
+        ColorScheme { 
+            c0: cols[0],
+            c1: cols[1],
+            c2: cols[2],
+            c3: cols[3],
+            c4: cols[4],
+            c5: cols[5],
+            c6: cols[6],
+            c7: cols[7],
+            c8: cols[8],
+            c9: cols[9]
+        }
     }
     
 }

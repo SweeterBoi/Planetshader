@@ -36,51 +36,36 @@ impl Atmosphere {
             rotationalAngle: 0.0,
         }
     }
-    /*
+    /* THIS IS DEPRECATED
         Update the LandMass rotation angle
      */
     pub fn update(&mut self) {
         self.rotationalAngle += 0.03;
     }
+
     /*
-        draw the Atmosphere
-        @param canvas - the canvas to draw to
-        @param ColorScheme - defines the color scheme of the planet
-     */
-    pub fn draw(&mut self, canvas: &mut Canvas<Window>, ColorScheme: ColorScheme) {
-        let xStart: i32 = self.position.x as i32 - self.size as i32;
-        let yStart: i32 = self.position.y as i32 - self.size as i32;
+        
+    */
+    pub fn getPixelValue(&mut self, perlinAtmosphere: f64, ColorScheme: Vec<Color>, dx:i32, dy:i32, illuminationFunction: &dyn Fn(i32, i32, i32) -> bool) -> Color {
+        let cloudDarkening = 30;
+        
+        let cloudColor = match perlinAtmosphere {
+            x if x > 1.4 => ColorScheme[6],
+            _=> ColorScheme[7],
+        };
 
-        let perlin: Perlin = Perlin::new(self.seed);
-
-        for xi in xStart .. xStart + 2*self.size as i32 {
-            for yi in yStart.. yStart + 2*self.size as i32 {
-
-                let dx: i32 = xi - self.position.x as i32;
-                let dy: i32 = yi - self.position.y as i32;
-
-                if ((dx*dx + dy*dy) as f64).sqrt() < self.size as f64 {
-
-                    let coordinatesOnSphere: Vect2D =  PixelCoordinatesToSphereCoordinates(
-                        Vect2D {x: xi as f64, y: yi as f64},
-                        self.position,
-                        2*self.size);
-
-                    let grid: f64 = 1.9;
-                    let perlinValue = 2.0*perlin.get([
-                        grid * coordinatesOnSphere.y, 
-                        grid * (coordinatesOnSphere.x)+self.rotationalAngle, 
-                        0f64]);
-
-                    canvas.set_draw_color(Color::RGB(250, 250, 255));
-                    if perlinValue > 0.9 {
-                        match canvas.draw_point(Point::new(xi, yi)) {
-                            Ok(_) => (),
-                            Err(_) => {}
-                        };
-                    }
-                }
-            }
+        // Darken the Clouds where they are not illuminated
+        let isNotIllunimated: bool = illuminationFunction(dx, dy, self.size.into());
+        let drawColor: Color;
+        if isNotIllunimated {
+        drawColor =  Color::RGB(
+            cloudColor.r-cloudDarkening, 
+            cloudColor.g-cloudDarkening, 
+            cloudColor.b-cloudDarkening);
         }
+        else {
+        drawColor = cloudColor;
+        }
+        drawColor
     }
 }
