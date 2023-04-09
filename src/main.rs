@@ -14,8 +14,10 @@ mod background;
 mod planet;
 mod converter;
 mod test;
+mod landmass;
+mod atmoshphere;
 
-use crate::{dataStructures::{Vect2D, Vect3D, ColorScheme}, background::{BackgroundStars}, planet::{Planet}};
+use crate::{dataStructures::{Vect2D, Vect3D, ColorScheme}, background::BackgroundStars, planet::Planet};
 
 
 const SCREENWIDTH: u32 = 800;
@@ -26,7 +28,7 @@ pub fn main() -> Result<(), String> {
     let video_subsystem: sdl2::VideoSubsystem = sdl_context.video()?;
 
     let window: sdl2::video::Window = video_subsystem
-        .window("sdl2 isometric demo", SCREENWIDTH, SCREENHEIGHT)
+        .window("Planets owo", SCREENWIDTH, SCREENHEIGHT)
         .position_centered()
         .opengl()
         .build()
