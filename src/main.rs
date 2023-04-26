@@ -7,7 +7,7 @@ extern crate sdl2;
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color};
 use sdl2::rect::Rect;
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 mod dataStructures;
 mod background;
@@ -22,7 +22,7 @@ use crate::{dataStructures::{Vect2D, Vect3D, ColorScheme}, background::Backgroun
 
 const SCREENWIDTH: u32 = 800;
 const SCREENHEIGHT: u32 = 600;
-
+const PLANETSIZE: i16 = 200i16;
 // Main Function
 pub fn main() -> Result<(), String> {
     let sdl_context: sdl2::Sdl = sdl2::init()?;
@@ -43,7 +43,7 @@ pub fn main() -> Result<(), String> {
     let mut event_pump: sdl2::EventPump = sdl_context.event_pump()?;
 
     // Background stars
-    let background: BackgroundStars = BackgroundStars::new(100u32);
+    let mut background: BackgroundStars = BackgroundStars::new(100u32);
     // ColorScheme
     let mut colors: Vec<Color> = Vec::new();
     colors.push(Color::RGB(99, 171, 63));
@@ -56,10 +56,9 @@ pub fn main() -> Result<(), String> {
     colors.push(Color::RGB(223, 224, 232));
     colors.push(Color::RGB(104, 111, 153));
     colors.push(Color::RGB(64, 73, 115));
-
     //Planet
-    let mut Planet: Planet = Planet::new(colors.clone());
-
+    let mut Planet: Planet = Planet::new(colors.clone(), PLANETSIZE);
+    
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -70,7 +69,7 @@ pub fn main() -> Result<(), String> {
                 } => break 'running,
                 Event::KeyDown {
                     keycode: Some(Keycode::Space), ..
-                } => {Planet = Planet::new(colors.clone());}
+                } => {Planet = Planet::new(colors.clone(), PLANETSIZE);}
                 _ => {}
             }
         }
@@ -79,12 +78,10 @@ pub fn main() -> Result<(), String> {
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
         //::std::thread::sleep(Duration::new(0, 1_000_000u32 / 30));
-
         background.draw(&mut canvas);
         Planet.update();
         Planet.draw(&mut canvas);
-
-        drawColorScheme(&mut canvas, &colors);
+        //drawColorScheme(&mut canvas, &colors);
     }
 
     Ok(())
@@ -98,6 +95,10 @@ fn drawColorScheme(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, color
     for (i, color) in colors.iter().enumerate() {
         let yi: u32 = topLeftCorner.y as u32 + (i as u32 * (size + margin));
         canvas.set_draw_color(*color);
-        canvas.fill_rect(Rect::new(topLeftCorner.x as i32, yi as i32, size, size));
+        match canvas.fill_rect(Rect::new(topLeftCorner.x as i32, yi as i32, size, size)){
+            Ok(_) => (),
+            Err(_) => {}
+            };
+        
     }
 }
